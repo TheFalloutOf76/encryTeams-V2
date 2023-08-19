@@ -1,5 +1,5 @@
 (function() {
-    if (window.location.href.substring(0,45) != "https://teams.microsoft.com/_#/conversations/") {
+    if (window.location.href.substring(0, 45) != "https://teams.microsoft.com/_#/conversations/") {
         window.location.replace("https://teams.microsoft.com/_#/conversations/48:notes?ctx=chat")
     }
 
@@ -118,7 +118,9 @@
                     return;
                 } else {
                     clearTimeout(stopUpdating);
-                    stopUpdating = setTimeout(window.location.reload, 1000 * 60 * 5);
+                    stopUpdating = setTimeout(function() {
+                        window.location.reload()
+                    }, 1000 * 60 * 5);
                     rawMessages.forEach((message, index) => {
                         previousMessages[index] = message.content;
                     });
@@ -217,5 +219,7 @@
     }
 
     setInterval(getMessages, 3000);
-    var stopUpdating = setTimeout(window.location.reload, 1000 * 60 * 5);
+    var stopUpdating = setTimeout(function() {
+        window.location.reload()
+    }, 1000 * 60 * 5);
 })();
