@@ -7,6 +7,7 @@
 * make sure you are pasting it into the URL option.
 4. Go to Teams online and click on the bookmark/favorite.
 * make sure you set a key before trying to send any messages.
+
 alternatively you can also just directly copy the code from the repo and paste it into the console on Teams.
 
 ## FAQ
