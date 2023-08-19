@@ -18,7 +18,7 @@ inputElement.style.height = '100%';
 inputElement.style.backgroundColor = '#292929';
 inputElement.onkeyup = function(event) {
     if (event.keyCode == 13 && !event.shiftKey) {
-        sendMessage(`[encryTeams]${encrypt(window.frames[0].document.getElementById('inputBox').value, keys[currentChatId])}`)
+        sendMessage(`[encryTeams]${encrypt(window.frames[0].document.getElementById('inputBox').value, encryptionKeys[currentChatId])}`)
         window.frames[0].document.getElementById('inputBox').value = '';
     }
 };
@@ -36,8 +36,8 @@ function createSetKeyButton() {
         setKey.style.color = '#FFFFFF';
         document.querySelector('[data-tid="tabs-menu"]').append(setKey);
         document.getElementById('setKey').onclick = function() {
-            keys[currentChatId] = prompt("Enter Key:");
-            localStorage.setItem("AESkeys", JSON.stringify(keys));
+            encryptionKeys[currentChatId] = prompt("Enter Key:");
+            localStorage.setItem("AESkeys", JSON.stringify(encryptionKeys));
         }
     }
 }
@@ -62,18 +62,22 @@ window.onhashchange = function() {
     createSetKeyButton()
 };
 
-var keys;
+var encryptionKeys;
 if (!localStorage.getItem("AESkeys")) {
     localStorage.setItem("AESkeys", JSON.stringify({}));
 }
-keys = JSON.parse(localStorage.getItem("AESkeys"));
+encryptionKeys = JSON.parse(localStorage.getItem("AESkeys"));
 
 function encrypt(plain, password) {
     return CryptoJS.AES.encrypt(plain, password).toString()
 }
 
 function decrypt(encrypted, password) {
-    decrypted = CryptoJS.AES.decrypt(encrypted, password).toString(CryptoJS.enc.Utf8);
+    try {
+        var decrypted = CryptoJS.AES.decrypt(encrypted, password).toString(CryptoJS.enc.Utf8);
+    } catch {
+        var decrypted = false;
+    }
     if (encrypted && !decrypted) {
         return "INVALID KEY";
     } else {
@@ -97,7 +101,7 @@ var failCount = 0;
 
 function getMessages() {
     let xhr = new XMLHttpRequest();
-    xhr.open('GET', `https://amer.ng.msg.teams.microsoft.com/v1/users/ME/conversations/${currentChatId}/messages?startTime=0&pageSize=20`);
+    xhr.open('GET', `https://amer.ng.msg.teams.microsoft.com/v1/users/ME/conversations/${currentChatId}/messages?startTime=0&pageSize=50`);
     xhr.setRequestHeader('authentication', 'skypetoken=' + teamsToken)
     xhr.onload = function() {
         if (xhr.status == 200) {
@@ -140,7 +144,7 @@ function getMessages() {
 
 function parseMessage(message) {
     if (message.substring(0, 12) == "[encryTeams]") {
-        return decrypt(message.substring(12), keys[currentChatId]).replace(/\n/g, '<br>');
+        return decrypt(message.substring(12), encryptionKeys[currentChatId]).replace(/\n/g, '<br>');
     } else {
         return message;
     }
@@ -207,7 +211,8 @@ function displayMessages(messages) {
         }
         lastMessageAuthor = messageAuthor;
     }
-    window.scrollTo(0, window.frames[0].document.getElementById('chatMessages').scrollHeight);
+    var chatWindow = window.frames[0].document.getElementById('chatMessages');
+    chatWindow.scrollTop = chatWindow.scrollHeight;
 }
 
 setInterval(getMessages, 3000);
